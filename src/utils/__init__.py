@@ -1,2 +1,2 @@
 
-from utils.utils import getBoundingBoxes, nonMaxSuppression
+from utils.utils import getBoundingBoxes, smoothContours

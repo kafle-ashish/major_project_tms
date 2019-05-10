@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 from extractor import Extractors
-from utils import getBoundingBoxes, nonMaxSuppression
+from utils import getBoundingBoxes, smoothContours
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 VID_DATA_DIR = os.path.join(FILE_DIR, 'data', 'video')
@@ -27,8 +27,11 @@ if __name__ == '__main__':
         _, frame = cap.read()
 
         subtracted = ex.extractForeground(frame)
+
         contours, _ = cv2.findContours(
             subtracted, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = smoothContours(contours)
+
         bounded_frame = getBoundingBoxes(contours, frame)
         cv2.imshow('image', bounded_frame)
 
