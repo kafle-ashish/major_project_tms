@@ -7,7 +7,6 @@ from utils import getCapture, getBoundingBoxes, smoothContours
 
 if __name__ == '__main__':
     cap = getCapture('{}/one.mp4'.format(VID_DATA_DIR))
-    # print(cap.size)
     _, frame = cap.read()
     ex = Extractors(frame)
 
@@ -18,7 +17,7 @@ if __name__ == '__main__':
 
         contours, _ = cv2.findContours(
             subtracted, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-            )
+        )
         contours, _ = smoothContours(contours)
 
         bounded_frame = getBoundingBoxes(contours, frame)

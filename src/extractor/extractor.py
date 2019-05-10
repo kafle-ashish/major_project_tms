@@ -16,7 +16,7 @@ class Extractors:
 
     def __init__(self, frame):
         self.bg_sub = cv2.bgsegm.createBackgroundSubtractorMOG()
-        self.kernel = np.ones((5, 5), np.uint8)
+        self.kernel = np.ones((3, 3), np.uint8)
         self.bg_avg = np.float32(frame)
 
     def extractForeground(self, frame):
@@ -28,9 +28,10 @@ class Extractors:
                 arg2 : numpy array
                         A numpy array of input image.
         '''
+        # blur = cv2.GaussianBlur(frame, (3, 3), 0)
         dilation = cv2.dilate(frame, self.kernel, iterations=1)
-        # blur = cv2.GaussianBlur(dilation, (3, 3), 0)
-        mask = self.bg_sub.apply(dilation)
+        erosion = cv2.erode(dilation, self.kernel, iterations=1)
+        mask = self.bg_sub.apply(erosion)
         return mask
 
     def subtractor(self, frame):
@@ -56,9 +57,9 @@ class Extractors:
 
 
 '''
-    frame_count=int(cap.get(cv2.CAP_PROP_FRAME_COUNT))   
-    fps = int(cap.get(cv2.CAP_PROP_FPS))  
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  
+    frame_count=int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     #img = cv2.imread('./1.jpg')
 '''
