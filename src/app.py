@@ -1,25 +1,13 @@
-
-
 import cv2
 import numpy as np
-import os
 
 from extractor import Extractors
-from utils import getBoundingBoxes, smoothContours
-
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-VID_DATA_DIR = os.path.join(FILE_DIR, 'data', 'video')
-IMG_DATA_DIR = os.path.join(FILE_DIR, 'data', 'image')
-
-
-def getCapture(device=0):
-    cap = cv2.VideoCapture(device)
-    if cap.isOpened():
-        return cap
-
+from globals import FILE_DIR, IMG_DATA_DIR, VID_DATA_DIR
+from utils import getCapture, getBoundingBoxes, smoothContours
 
 if __name__ == '__main__':
     cap = getCapture('{}/one.mp4'.format(VID_DATA_DIR))
+    # print(cap.size)
     _, frame = cap.read()
     ex = Extractors(frame)
 
@@ -29,7 +17,8 @@ if __name__ == '__main__':
         subtracted = ex.extractForeground(frame)
 
         contours, _ = cv2.findContours(
-            subtracted, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            subtracted, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            )
         contours, _ = smoothContours(contours)
 
         bounded_frame = getBoundingBoxes(contours, frame)

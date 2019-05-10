@@ -2,6 +2,12 @@
 import cv2
 
 
+def getCapture(device=0):
+    cap = cv2.VideoCapture(device)
+    if cap.isOpened():
+        return cap
+
+
 def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
     '''
         Draws rectangles around contours.
@@ -11,9 +17,10 @@ def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
             arg2: frame  :Numpy Array
             arg3: color  :RGB tuple
     '''
+    print(len(contour))
     for c in contour:
         x, y, w, h = cv2.boundingRect(c)
-        print((x, y), (x+w, y+h))
+        # print((x, y), (x+w, y+h), c)
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
     return frame
 
@@ -33,5 +40,5 @@ def smoothContours(contours, thresh=1):
         contours, weights = cv2.groupRectangles(contours, thresh)
     except Exception as e:
         pass
-    # contours = list(x for x in contours if cv2.contourArea(x) > 50)
+    contours = list(x for x in contours if cv2.contourArea(x) > 30)
     return contours, weights

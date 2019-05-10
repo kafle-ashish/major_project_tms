@@ -1,2 +1,2 @@
 
-from utils.utils import getBoundingBoxes, smoothContours
+from utils.utils import getBoundingBoxes, smoothContours, getCapture
