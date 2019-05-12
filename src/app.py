@@ -5,6 +5,8 @@ from extractor import Extractors
 from globals import FILE_DIR, IMG_DATA_DIR, VID_DATA_DIR
 from utils import getCapture, getBoundingBoxes, smoothContours
 
+print('using OpenCV {}'.format(cv2.__version__))
+
 if __name__ == '__main__':
     cap = getCapture('{}/one.mp4'.format(VID_DATA_DIR))
     _, frame = cap.read()
@@ -16,10 +18,9 @@ if __name__ == '__main__':
         subtracted = ex.extractForeground(frame)
 
         contours, _ = cv2.findContours(
-            subtracted, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            subtracted, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
-        contours, _ = smoothContours(contours)
-
+        contours = smoothContours(contours)
         bounded_frame = getBoundingBoxes(contours, frame)
         cv2.imshow('image', bounded_frame)
 

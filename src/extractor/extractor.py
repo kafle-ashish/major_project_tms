@@ -28,9 +28,9 @@ class Extractors:
                 arg2 : numpy array
                         A numpy array of input image.
         '''
-        # blur = cv2.GaussianBlur(frame, (3, 3), 0)
-        dilation = cv2.dilate(frame, self.kernel, iterations=1)
-        erosion = cv2.erode(dilation, self.kernel, iterations=1)
+        blur = cv2.GaussianBlur(frame, (3, 3), 0)
+        erosion = cv2.erode(blur, self.kernel, iterations=2)
+        # dilation = cv2.dilate(erosion, self.kernel, iterations=2)
         mask = self.bg_sub.apply(erosion)
         return mask
 
