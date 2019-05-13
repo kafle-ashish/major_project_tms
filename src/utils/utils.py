@@ -78,7 +78,7 @@ def laneFinder(frame, sig=0.33):
     return edged
 
 
-def roi(frame, vertices):
+def roi(frame):
     imshape = frame.shape
     vertices = np.array([[(0, imshape[0]/1.5),
                           (450, 320), (800, 320),
