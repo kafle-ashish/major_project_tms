@@ -1,2 +1,2 @@
 
-from utils.utils import getBoundingBoxes, smoothContours, getCapture, findHull
+from utils.utils import getBoundingBoxes, getCapture, approximateContours

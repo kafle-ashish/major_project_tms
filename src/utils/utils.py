@@ -50,3 +50,7 @@ def findHull(contour):
             @param: contour: List
     '''
     return list(cv2.convexHull(x) for x in contour)
+
+
+def approximateContours(contours):
+    return findHull(smoothContours(contours))
