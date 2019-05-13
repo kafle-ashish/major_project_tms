@@ -67,11 +67,31 @@ def getBoxes(contour):
     return list(cv2.boundingRect(c) for c in contour)
 
 
-def laneFinder(frame):
-    grey_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    kernel_size = 5
-    blur_gray = cv2.GaussianBlur(grey_image, (kernel_size, kernel_size), 0)
-    low_threshold = 50
-    high_threshold = 150
-    edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
-    return edges
+def laneFinder(frame, sig=0.33):
+    # compute the median of the single channel pixel intensities
+    v = np.median(frame)
+    # apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sig) * v))
+    upper = int(min(255, (1.0 + sig) * v))
+    edged = cv2.Canny(frame, lower, upper)
+    # return the edged image
+    return edged
+
+
+def roi(frame, vertices):
+    imshape = frame.shape
+    vertices = np.array([[(0, imshape[0]/1.5),
+                          (450, 320), (800, 320),
+                          (imshape[1], imshape[0]/1.1),
+                          (imshape[1], imshape[0]),
+                          (0, imshape[0])]
+                         ], dtype=np.int32)
+    mask = np.zeros(frame.shape, dtype=np.uint8)
+    # filling pixels inside the polygon defined by
+    # "vertices" with the fill color
+    cv2.fillPoly(mask, vertices, (255, 255, 255))
+    cv2.imshow('mask', mask)
+    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # returning the image only where mask pixels are nonzero
+    mask = cv2.bitwise_and(mask, frame)
+    return mask
