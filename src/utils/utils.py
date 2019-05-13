@@ -23,7 +23,7 @@ def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
     return frame
 
 
-def smoothContours(contours, thresh=1):
+def smoothContours(contours, thresh=3):
     '''
         Combines multiple bounding boxes into a single one.
         Parameters
@@ -38,6 +38,15 @@ def smoothContours(contours, thresh=1):
         contours, weights = cv2.groupRectangles(contours, thresh)
     except Exception as e:
         pass
-    # contours = list(x for i, x in enumerate(contours) if hierarchy[0, i, 3] == -1)
     contours = list(x for x in contours if cv2.contourArea(x) > 30)
     return contours
+
+
+def findHull(contour):
+    '''
+        A function to calculate convex hull of contours.
+        Parameters
+        ----------
+            @param: contour: List
+    '''
+    return list(cv2.convexHull(x) for x in contour)
