@@ -1,8 +1,7 @@
 
-import numpy as np
 import cv2
-
-theta = np.pi/180  # angular resolution in radians of the Hough grid
+import numpy as np
+from globals import MAX_LINE_GAP, MIN_LINE_LENGTH, THETA
 
 
 def getCapture(device=0):
@@ -16,17 +15,15 @@ def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
         Draws rectangles around contours.
         Parameters
         ----------
-            arg1: contour:List
-            arg2: frame  :Numpy Array
-            arg3: color  :RGB tuple
+            @param: contour: List
+            @param: frame  : Numpy Array
+            @param: color  : RGB tuple
+            @return frame: List
+                Numpy array of an image.
     '''
-    err = 0
-    for i, c in enumerate(contour):
+    for c in contour:
         x, y, w, h = cv2.boundingRect(c)
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-        if cv2.contourArea(c) < 30:
-            print("error")
-            err += 1
     return frame
 
 
@@ -35,8 +32,10 @@ def smoothContours(contours, thresh=3):
         Combines multiple bounding boxes into a single one.
         Parameters
         ----------
-            arg1: contour: List
-            arg2: thresh: Int
+            @param: contour: List
+            @param: thresh: Int
+            @return contour: List
+                Array of smoothed contours.
     '''
     if contours is None:
         return
@@ -55,6 +54,8 @@ def findHull(contour):
         Parameters
         ----------
             @param: contour: List
+            @return hull: List
+                Array of convex hulls.
     '''
     return list(cv2.convexHull(x) for x in contour)
 
@@ -81,26 +82,26 @@ def laneFinder(frame, sig=0.33):
 
 
 def roi(frame):
+    '''
+        Extracts a region of interest from given frame.
+        Parameters
+        ----------
+            @param frame: List
+                Numpy array of an image.
+            @return frame: List
+                Numpy array of an image.
+    '''
     imshape = frame.shape
     vertices = np.array([[(0, imshape[0]/1.5),
-                          (450, 320), (800, 320),
+                          (450, 320),
+                          (800, 320),
                           (imshape[1], imshape[0]/1.1),
                           (imshape[1], imshape[0]),
                           (0, imshape[0])]
                          ], dtype=np.int32)
     mask = np.zeros(frame.shape, dtype=np.uint8)
-    # filling pixels inside the polygon defined by
-    # "vertices" with the fill color
     cv2.fillPoly(mask, vertices, (255, 255, 255))
-    cv2.imshow('mask', mask)
-    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # returning the image only where mask pixels are nonzero
-    mask = cv2.bitwise_and(mask, frame)
-    return mask
-
-
-min_line_length = 40  # minimum number of pixels making up a line
-max_line_gap = 30    # maximum gap in pixels between connectable line segments
+    return cv2.bitwise_and(mask, frame)
 
 
 def drawLanes(frame, rho=1, threshold=40):
@@ -114,11 +115,13 @@ def drawLanes(frame, rho=1, threshold=40):
                 Distance resolution in pixels of the Hough grid.
             @param threshold: Number
                 Minimum number of votes/intersections in Hough grid cell.
+            @return points: List
+                Numpy array of line points.
     '''
     # creating a blank to draw lines on
     line_image = np.copy(frame)*0
-    lines = cv2.HoughLinesP(frame, rho, theta, threshold,
-                            np.array([]), min_line_length, max_line_gap)
+    lines = cv2.HoughLinesP(frame, rho, THETA, threshold,
+                            np.array([]), MIN_LINE_LENGTH, MAX_LINE_GAP)
     points = []
     for line in lines:
         for x1, y1, x2, y2 in line:

@@ -35,7 +35,6 @@ if __name__ == '__main__':
         lines = drawLanes(mask)
         for points in lines:
             cv2.line(frame, points[0], points[1], (255, 0, 0), 5)
-        lines_edges = cv2.addWeighted(frame, 0.8, line_image, 1, 0)
         cv2.imshow('image', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
