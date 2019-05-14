@@ -2,6 +2,8 @@
 import numpy as np
 import cv2
 
+theta = np.pi/180  # angular resolution in radians of the Hough grid
+
 
 def getCapture(device=0):
     cap = cv2.VideoCapture(device)
@@ -95,3 +97,30 @@ def roi(frame):
     # returning the image only where mask pixels are nonzero
     mask = cv2.bitwise_and(mask, frame)
     return mask
+
+
+min_line_length = 40  # minimum number of pixels making up a line
+max_line_gap = 30    # maximum gap in pixels between connectable line segments
+
+
+def drawLanes(frame, rho=1, threshold=40):
+    '''
+        Draws possible lanes from an edged frame.
+        Parameters
+        ----------
+            @param frame: List
+                Numpy array of an image.
+            @param rho: Number
+                Distance resolution in pixels of the Hough grid.
+            @param threshold: Number
+                Minimum number of votes/intersections in Hough grid cell.
+    '''
+    # creating a blank to draw lines on
+    line_image = np.copy(frame)*0
+    lines = cv2.HoughLinesP(frame, rho, theta, threshold,
+                            np.array([]), min_line_length, max_line_gap)
+    points = []
+    for line in lines:
+        for x1, y1, x2, y2 in line:
+            points.append([(x1, y1), (x2, y2)])
+    return points
