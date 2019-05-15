@@ -3,9 +3,9 @@ import cv2
 import asyncio
 import numpy as np
 
+from utils import *
 from extractor import Extractors
 from globals import FILE_DIR, IMG_DATA_DIR, VID_DATA_DIR
-from utils import *
 
 print('using OpenCV {}'.format(cv2.__version__))
 cap = getCapture('{}/one.mp4'.format(VID_DATA_DIR))
@@ -18,7 +18,6 @@ async def detectVehicles(frame):
         subtracted, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
     hulls = approximateContours(contours)
-    # boxes = getBoxes(hulls)
     return getBoundingBoxes(hulls, frame)
 
 
@@ -30,10 +29,10 @@ async def detectLanes(frame):
 async def main():
     while cap.isOpened():
         start = cv2.getTickCount()
+        
         _, frame = cap.read()
 
-        detection = await detectVehicles(frame)
-
+        detection = await detectVehicles(roi(frame))
         lanes = await detectLanes(frame)
         mask = roi(lanes)
         lines = drawLanes(mask)
