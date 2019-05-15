@@ -67,7 +67,11 @@ def approximateContours(contours):
 def getBoxes(contour):
     if contour is None:
         return []
-    return list(cv2.boundingRect(c) for c in contour)
+    boxes = []
+    for c in contour:
+        x, y, w, h = cv2.boundingRect(c)
+        boxes.append((x, y, x+w, y+h))
+    return boxes  # list(cv2.boundingRect(c) for c in contour)
 
 
 def laneFinder(frame, sig=0.33):
@@ -119,7 +123,6 @@ def drawLanes(frame, rho=1, threshold=40):
                 Numpy array of line points.
     '''
     # creating a blank to draw lines on
-    line_image = np.copy(frame)*0
     lines = cv2.HoughLinesP(frame, rho, THETA, threshold,
                             np.array([]), MIN_LINE_LENGTH, MAX_LINE_GAP)
     points = []
