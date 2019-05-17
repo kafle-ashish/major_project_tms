@@ -27,12 +27,14 @@ class Extractors:
                         Foreground extracted frame.
         '''
         blur = cv2.GaussianBlur(frame, (3, 3), 0)
-        dilation = cv2.dilate(blur, self.kernel, iterations=2)
-        erosion = cv2.erode(dilation, self.kernel, iterations=3)
-
-        # closing = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, self.kernel)
+        median = cv2.medianBlur(blur, 5)
+        # dilation = cv2.dilate(blur, self.kernel, iterations=2)
+        # erosion = cv2.erode(dilation, self.kernel, iterations=3)
+        sub = self.bg_sub.apply(median)
+        closing = cv2.morphologyEx(sub, cv2.MORPH_CLOSE, self.kernel)
         # opening = cv2.morphologyEx(closing, cv2.MORPH_OPEN, self.kernel)
-        return self.bg_sub.apply(frame)
+        cv2.imshow('median', closing)
+        return closing
 
     def subtractor(self, frame):
         background = cv2.imread('background.jpg')

@@ -37,7 +37,7 @@ async def main():
 
         _, frame = cap.read()
 
-        detection, _ = await detectVehicles(roi(frame))
+        detection, ret = await detectVehicles(roi(frame))
         if timer < 150:
             lanes = await detectLanes(frame)
             mask = roi(lanes)
@@ -47,21 +47,24 @@ async def main():
 
         end = cv2.getTickCount()
         print('{:f}s elapsed...'.format((end - start)/cv2.getTickFrequency()))
-        if timer >= 125:
-            cv2.imshow('image', detection)
-        else:
-            timer += 1
-        if timer >= 125 and timer <= 150:
-            houghLines.append(lines)
-            timer += 1
-            print("tmer is", timer)
-        if timer == 150:
-            houghLines.sort()
-            with open(os.path.join(FILE_DIR, 'test', 'lines.pkl'), 'wb') as f:
-                pickle.dump(houghLines, f)
-            # averageLines(houghLines)
-            # do line filtering and get lanes.
+        cv2.imshow('frame', detection)
+        # if timer >= 125:
+        #     cv2.imshow('image', detection)
+        # else:
+        #     timer += 1
+        # if timer >= 125 and timer <= 150:
+        #     houghLines.append(lines)
+        #     timer += 1
+        #     print("tmer is", timer)
+        # if timer == 150:
+        #     houghLines.sort()
+        # with open(os.path.join(FILE_DIR,
+        #  'test', 'lines.pkl'), 'wb') as f:
+        #     pickle.dump(houghLines, f)
+        # averageLines(houghLines)
+        # do line filtering and get lanes.
 
+        # cv2.imshow('ret', ret)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cv2.destroyAllWindows()

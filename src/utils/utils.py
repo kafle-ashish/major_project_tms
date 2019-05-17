@@ -71,7 +71,9 @@ def smoothContours(contours, thresh=0.3):
         pass
     # if width of the contour is very high than it's
     # height then it is probably an error.
-    contours = list(x for x in contours if cv2.contourArea(x) > 30)
+    contours = list(x for x in contours if cv2.boundingRect(x)
+                    [2]/3 <= cv2.boundingRect(x)[3])
+    contours = list(x for x in contours if cv2.contourArea(x) > 50)
     return contours
 
 
