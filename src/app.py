@@ -57,6 +57,8 @@ async def main():
             print("tmer is", timer)
         if timer == 150:
             houghLines.sort()
+            with open(os.path.join(FILE_DIR, 'test', 'lines.pkl'), 'wb') as f:
+                pickle.dump(houghLines, f)
             # averageLines(houghLines)
             # do line filtering and get lanes.
 
