@@ -1,6 +1,7 @@
 import sys
 import cv2
 import asyncio
+import pickle
 import numpy as np
 
 from utils import *
@@ -46,17 +47,17 @@ async def main():
 
         end = cv2.getTickCount()
         print('{:f}s elapsed...'.format((end - start)/cv2.getTickFrequency()))
-        if timer >= 100:
+        if timer >= 125:
             cv2.imshow('image', detection)
-            averageLines(lines)
         else:
             timer += 1
         if timer >= 125 and timer <= 150:
             houghLines.append(lines)
             timer += 1
-        if timer >= 150:
+            print("tmer is", timer)
+        if timer == 150:
             houghLines.sort()
-            averageLines(houghLines)
+            # averageLines(houghLines)
             # do line filtering and get lanes.
 
         if cv2.waitKey(1) & 0xFF == ord('q'):

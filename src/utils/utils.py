@@ -151,12 +151,12 @@ def averageLines(lines):
         ----------
             @params: lines: List of lines
     '''
-    for i in range(len(lines)):
-        for j in range(i+1, len(lines)):
-            slopeI = lines[i][0][1]-lines[i][0][0] / \
-                lines[i][1][1]-lines[i][1][0]
+    for hlines in lines:
+        for i in range(len(hlines)):
+            for j in range(i+1, len(hlines)):
+                slopeI = hlines[i][0][1]-hlines[i][0][0] / \
+                    hlines[i][1][1]-hlines[i][1][0]
 
-            slopeII = lines[j][0][1]-lines[j][0][0] / \
-                lines[j][1][1]-lines[j][1][0]
-            if slopeI == slopeII:
-                print(slopeI)
+                slopeII = hlines[j][0][1]-hlines[j][0][0] / \
+                    hlines[j][1][1]-hlines[j][1][0]
+                print(hlines[j][0][1]-hlines[i][0][1])
