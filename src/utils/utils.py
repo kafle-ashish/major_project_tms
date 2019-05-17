@@ -52,7 +52,7 @@ def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
     return frame
 
 
-def smoothContours(contours, thresh=0.3):
+def smoothContours(contours, thresh=1):
     '''
         Combines multiple bounding boxes into a single one.
         Parameters
@@ -64,7 +64,6 @@ def smoothContours(contours, thresh=0.3):
     '''
     if contours is None:
         return
-    weights = []
     try:
         contours, weights = cv2.groupRectangles(contours, thresh)
     except Exception as e:
@@ -72,8 +71,8 @@ def smoothContours(contours, thresh=0.3):
     # if width of the contour is very high than it's
     # height then it is probably an error.
     contours = list(x for x in contours if cv2.boundingRect(x)
-                    [2]/3 <= cv2.boundingRect(x)[3])
-    contours = list(x for x in contours if cv2.contourArea(x) > 50)
+                    [2]/2.5 <= cv2.boundingRect(x)
+                    [3] and cv2.contourArea(x) > 50)
     return contours
 
 
