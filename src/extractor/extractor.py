@@ -13,7 +13,7 @@ class Extractors:
 
     def __init__(self, frame):
         self.bg_sub = cv2.bgsegm.createBackgroundSubtractorMOG()
-        self.kernel = np.ones((3, 3), np.uint8)
+        self.kernel = np.ones((7, 7), np.uint8)
         self.bg_avg = np.float32(frame)
 
     def extractForeground(self, frame):
@@ -26,9 +26,12 @@ class Extractors:
                 @return : Frame
                         Foreground extracted frame.
         '''
-        # blur = cv2.GaussianBlur(frame, (3, 3), 0)
-        # dilation = cv2.dilate(blur, self.kernel, iterations=1)
-        # erosion = cv2.erode(dilation, self.kernel, iterations=2)
+        blur = cv2.GaussianBlur(frame, (3, 3), 0)
+        dilation = cv2.dilate(blur, self.kernel, iterations=2)
+        erosion = cv2.erode(dilation, self.kernel, iterations=3)
+
+        # closing = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, self.kernel)
+        # opening = cv2.morphologyEx(closing, cv2.MORPH_OPEN, self.kernel)
         return self.bg_sub.apply(frame)
 
     def subtractor(self, frame):
