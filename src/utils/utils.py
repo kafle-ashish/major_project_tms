@@ -1,6 +1,7 @@
 
 import os
 import cv2
+import math
 import numpy as np
 
 
@@ -145,19 +146,54 @@ def compare(array):
             print(array[i], array[j], '\n')
 
 
-def averageLines(lines):
+def averageLines(lines, prop):
     '''
         Averages over a list of line points.
         Parameters
         ----------
             @params: lines: List of lines
     '''
-    for hlines in lines:
-        for i in range(len(hlines)):
-            for j in range(i+1, len(hlines)):
-                slopeI = hlines[i][0][1]-hlines[i][0][0] / \
-                    hlines[i][1][1]-hlines[i][1][0]
+    angles = []
+    for line in lines:
+        x, y, p, k = np.reshape(line, 4)
+        params = np.polyfit((x, y), (p, k), 1)
+        angles.append((math.floor(math.atan(params[0])*180/np.pi), params[1]))
+    angles.sort()
+    # print(angles)
+    averaged = averageSlopes(angles, prop)
+    # leftFitAvg = np.average(leftFit, axis=0)
+    # rightFitAvg = np.average(rightFit, axis=0)
+    # return mapCoOrdinates((leftFitAvg, rightFitAvg))
 
-                slopeII = hlines[j][0][1]-hlines[j][0][0] / \
-                    hlines[j][1][1]-hlines[j][1][0]
-                print(hlines[j][0][1]-hlines[i][0][1])
+
+def averageSlopes(angles, prop, threshold=7):
+    head = angles[0][0]
+    buffer = []
+    temp = []
+    for angle, intercept in angles[1:]:
+        if angle >= 86 and angle < 120:
+            continue
+        if angle-head <= threshold:
+            # print("Threshold has been met.....")
+            temp.append((angle, intercept))
+        else:
+            if len(temp) == 0:
+                # print("Threshold exceeded. Temp is empty...")
+                buffer.append([(angle, intercept)])
+            else:
+                # print("Threshold exceeded....")
+                buffer.append(temp)
+            head = angle
+            temp = []
+    averaged = list(np.average(items, axis=0) for items in buffer)
+    return mapOrdinates(averaged, prop)
+
+
+def mapOrdinates(ordinates, prop):
+    '''
+        Convert angles to tan inverse.
+        find new x and y based on these new points.
+        first normalize them with numpy.
+    '''
+    print(ordinates)
+    # return the x, y, p, q for the given slopes.
