@@ -3,6 +3,7 @@ import os
 import cv2
 import math
 import numpy as np
+from globals import FILE_DIR
 
 
 def save(frame, dir, name="untitled"):
@@ -15,8 +16,25 @@ def save(frame, dir, name="untitled"):
             @params: name : String
     '''
     if dir is not None:
-        return cv2.imsave(os.path.join(dir, name), frame)
-    return cv2.imsave(name, frame)
+        return cv2.imwrite(os.path.join(dir, name), frame)
+    return cv2.imwrite(name, frame)
+
+
+def video(dir, name="processed.mp4"):
+    try:
+        images = [img for img in os.listdir(dir) if img.endswith(".png")]
+        frame = cv2.imread(os.path.join(
+            FILE_DIR, "data", "processed", images[0]))
+        height, width, layers = frame.shape
+
+        video = cv2.VideoWriter(name, 0, 1, (width, height))
+
+        for image in images:
+            video.write(cv2.imread(os.path.join(
+                FILE_DIR, "data", "processed", image)))
+        return True
+    except Exception as e:
+        return False
 
 
 def getCapture(device=0):

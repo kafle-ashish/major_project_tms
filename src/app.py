@@ -8,10 +8,12 @@ from extractor import Extractors
 from globals import FILE_DIR, IMG_DATA_DIR, VID_DATA_DIR
 
 print('using OpenCV {}'.format(cv2.__version__))
+
 cap = getCapture('{}/one.mp4'.format(VID_DATA_DIR))
+ex = Extractors(roi(cap.read()[1]))
+
 WIDTH = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-ex = Extractors(roi(cap.read()[1]))
 
 
 async def detectVehicles(frame):
@@ -30,6 +32,7 @@ async def detectLanes(frame):
 
 
 async def main():
+    # i = 0
     while cap.isOpened():
         start = cv2.getTickCount()
 
@@ -48,7 +51,9 @@ async def main():
         end = cv2.getTickCount()
         print('{:f}s elapsed...'.format((end - start)/cv2.getTickFrequency()))
         cv2.imshow('frame', detection)
-
+        # save(detection, os.path.join(FILE_DIR, "data",
+        #                              "processed"), "{}.png".format(i+1))
+        # i += 1
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cv2.destroyAllWindows()
@@ -57,3 +62,8 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+    # ok = video(os.path.join(FILE_DIR, "data", "processed"))
+    # if ok:
+    #     print("Video successfully created...")
+    # else:
+    #     print("failed")
