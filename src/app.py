@@ -37,14 +37,14 @@ async def main():
 
         detection, ret = await detectVehicles(roi(frame))
         lanes = await detectLanes(frame)
-        
+
         mask = roi(lanes)
         lines = drawLanes(mask)
-        averageLines(lines, (WIDTH, HEIGHT))
-        
-        for points in lines:
+        averagedLines = averageLines(lines, (HEIGHT, WIDTH))
+        # for points in lines:
+        #     cv2.line(detection, points[0], points[1], (255, 0, 0), 5)
+        for points in averagedLines:
             cv2.line(detection, points[0], points[1], (255, 0, 0), 5)
-
         end = cv2.getTickCount()
         print('{:f}s elapsed...'.format((end - start)/cv2.getTickFrequency()))
         cv2.imshow('frame', detection)

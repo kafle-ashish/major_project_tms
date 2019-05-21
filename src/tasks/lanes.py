@@ -1,10 +1,12 @@
 
 import cv2
 import numpy as np
+import math
 from globals import MAX_LINE_GAP, MIN_LINE_LENGTH, THETA
+kernel = np.ones((15, 15), np.uint8)
 
 
-def drawLanes(frame, rho=1, threshold=40):
+def drawLanes(frame, rho=5, threshold=150):
     '''
         Draws possible lanes from an edged frame.
         Parameters
@@ -19,7 +21,9 @@ def drawLanes(frame, rho=1, threshold=40):
                 Numpy array of line points.
     '''
     # creating a blank to draw lines on
-    lines = cv2.HoughLinesP(frame, rho, THETA, threshold,
+    closing = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
+    # cv2.imshow("hough", closing)
+    lines = cv2.HoughLinesP(closing, rho, THETA, threshold,
                             np.array([]), MIN_LINE_LENGTH, MAX_LINE_GAP)
     points = []
     for line in lines:

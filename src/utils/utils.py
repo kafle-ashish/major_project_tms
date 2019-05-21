@@ -122,14 +122,13 @@ def roi(frame):
                 Numpy array of an image.
     '''
     imshape = frame.shape
-    vertices = np.array([[(0, imshape[0]/1.5),
+    vertices = np.array([[(0, imshape[0]/1.3),
                           (450, 320),
-                          (800, 320),
-                          (imshape[1], imshape[0]/1.1),
+                          (770, 320),
                           (imshape[1], imshape[0]),
                           (0, imshape[0])]
                          ], dtype=np.int32)
-    mask = np.zeros(frame.shape, dtype=np.uint8)
+    mask = np.zeros(imshape, dtype=np.uint8)
     cv2.fillPoly(mask, vertices, (255, 255, 255))
     return cv2.bitwise_and(mask, frame)
 
@@ -155,15 +154,11 @@ def averageLines(lines, prop):
     '''
     angles = []
     for line in lines:
-        x, y, p, k = np.reshape(line, 4)
-        params = np.polyfit((x, y), (p, k), 1)
-        angles.append((math.floor(math.atan(params[0])*180/np.pi), params[1]))
+        params = np.polyfit(line[0], line[1], 1)
+        angles.append((math.degrees((math.atan(params[0]))), params[1]))
     angles.sort()
     # print(angles)
-    averaged = averageSlopes(angles, prop)
-    # leftFitAvg = np.average(leftFit, axis=0)
-    # rightFitAvg = np.average(rightFit, axis=0)
-    # return mapCoOrdinates((leftFitAvg, rightFitAvg))
+    return averageSlopes(angles, prop)
 
 
 def averageSlopes(angles, prop, threshold=7):
@@ -195,5 +190,30 @@ def mapOrdinates(ordinates, prop):
         find new x and y based on these new points.
         first normalize them with numpy.
     '''
-    print(ordinates)
-    # return the x, y, p, q for the given slopes.
+    ords = []
+    for angle, intercept in ordinates:
+        slope = math.tan(angle)
+        try:
+            if prop[0] >= intercept >= prop[0]/1.3:
+                x1 = 0
+                y1 = int(intercept)
+            else:
+                x1 = int((320-intercept)/slope)
+                x2 = int((prop[0]-intercept)/slope)
+                y1 = int(prop[0])
+            if 450 <= x2 <= 770 and 0 <= x1 <= prop[1]:
+                ords.append([(x1, y1), (x2, 320)])
+            else:
+                if x2 > 770:
+                    x2 = 770
+                if x2 < 450:
+                    x2 = 450
+                if x1 > prop[1]:
+                    x1 = int(prop[1])
+                if x1 < 0:
+                    x1 = 0
+                ords.append([(x1, int(prop[0])), (x2, 320)])
+
+        except Exception as e:
+            continue
+    return ords
