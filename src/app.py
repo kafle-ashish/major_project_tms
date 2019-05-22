@@ -14,7 +14,7 @@ ex = Extractors(roi(cap.read()[1]))
 
 WIDTH = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
+lanes = LaneDetector(HEIGHT, WIDTH)
 
 async def detectVehicles(frame):
     subtracted = ex.extractForeground(frame)
@@ -28,7 +28,7 @@ async def detectVehicles(frame):
 
 async def detectLanes(frame):
     background = ex.extractBackground(frame)
-    return laneFinder(background)
+    return lanes.update(background)
 
 
 async def main():
@@ -39,11 +39,7 @@ async def main():
         _, frame = cap.read()
 
         detection, ret = await detectVehicles(roi(frame))
-        lanes = await detectLanes(frame)
-
-        mask = roi(lanes)
-        lines = drawLanes(mask)
-        averagedLines = averageLines(lines, (HEIGHT, WIDTH))
+        averagedLines = await detectLanes(frame)
         # for points in lines:
         #     cv2.line(detection, points[0], points[1], (255, 0, 0), 5)
         for points in averagedLines:
