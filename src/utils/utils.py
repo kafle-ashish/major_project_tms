@@ -50,7 +50,7 @@ def getCapture(device=0):
         return cap
 
 
-def getBoundingBoxes(contour, objects, frame, color=(0, 255, 0)):
+def getBoundingBoxes(contour, objects, frame):
     '''
         Draws rectangles around contours.
         Parameters
@@ -67,7 +67,7 @@ def getBoundingBoxes(contour, objects, frame, color=(0, 255, 0)):
         cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
                     CV_FONT, 0.4, TEXT_COLOR, 1, CV_AA)
         cv2.circle(frame, (centroid[0], centroid[1]), 4, TEXT_COLOR, -1)
-        cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), TEXT_COLOR, 2)
         # rect = cv2.minAreaRect(c)
         # box = cv2.boxPoints(rect)
         # box = np.int0(box)

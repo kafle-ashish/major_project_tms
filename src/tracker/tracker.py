@@ -34,7 +34,8 @@ class CentroidTracker():
         del self.disappeared[objectID]
 
     def count(self):
-        return self.nextObjectID - 1
+        count = self.nextObjectID - 1
+        return count
 
     def update(self, rects):
         # check to see if the list of input bounding box rectangles

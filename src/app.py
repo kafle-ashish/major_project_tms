@@ -28,7 +28,6 @@ async def detectVehicles(frame):
     hulls = approximateContours(contours)
     boxes = getBoxes(hulls)
     objects = tracker.update(boxes)
-    tracker.count()
     frame = getBoundingBoxes(hulls, objects, frame)
     return frame, subtracted
 
