@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from globals import BG_IMG_DATA
 
 
 class Extractors:
@@ -15,8 +16,15 @@ class Extractors:
         self.bg_sub = cv2.bgsegm.createBackgroundSubtractorMOG()
         self.kernel = np.ones((7, 7), np.uint8)
         self.bg_avg = np.float32(frame)
+        self.frame = frame
 
-    def extractForeground(self, frame):
+    def update(self, frame, jobType="bg"):
+        self.frame = frame
+        if jobType == "fg":
+            return self.extractForeground()
+        return self.extractBackground()
+
+    def extractForeground(self):
         '''
                 Extracts foreground from a supplied frame.
                 Parameters
@@ -26,21 +34,11 @@ class Extractors:
                 @return : Frame
                         Foreground extracted frame.
         '''
-        # blur = cv2.GaussianBlur(frame, (3, 3), 0)
-        # median = cv2.medianBlur(blur, 5)
-        # dilation = cv2.dilate(blur, self.kernel, iterations=2)
-        # erosion = cv2.erode(dilation, self.kernel, iterations=3)
-        sub = self.bg_sub.apply(frame)
+        sub = self.bg_sub.apply(self.frame)
         closing = cv2.morphologyEx(sub, cv2.MORPH_CLOSE, self.kernel)
-        # opening = cv2.morphologyEx(closing, cv2.MORPH_OPEN, self.kernel)
         return closing
 
-    def subtractor(self, frame):
-        background = cv2.imread('background.jpg')
-        subtracted = cv2.subtract(background, frame)
-        return subtracted
-
-    def extractBackground(self, frame):
+    def extractBackground(self):
         '''
                 Extracts background from a supplied frame.
                 Parameters
@@ -50,6 +48,9 @@ class Extractors:
                 @return : Frame
                         Background extracted frame.
         '''
-        cv2.accumulateWeighted(frame, self.bg_avg, 0.01)
+        cv2.accumulateWeighted(self.frame, self.bg_avg, 0.01)
         res = cv2.convertScaleAbs(self.bg_avg)
         return res
+
+    def subtractor(self):
+        return cv2.subtract(cv2.imread(BG_IMG_DATA), self.frame)

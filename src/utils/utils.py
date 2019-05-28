@@ -3,7 +3,7 @@ import os
 import cv2
 import math
 import numpy as np
-from globals import FILE_DIR
+from globals import *
 
 
 def save(frame, dir, name="untitled"):
@@ -50,7 +50,7 @@ def getCapture(device=0):
         return cap
 
 
-def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
+def getBoundingBoxes(contour, objects, frame, color=(0, 255, 0)):
     '''
         Draws rectangles around contours.
         Parameters
@@ -61,8 +61,12 @@ def getBoundingBoxes(contour, frame, color=(0, 255, 0)):
             @return frame: List
                 Numpy array of an image.
     '''
-    for c in contour:
+    for (objectID, centroid), c in zip(objects.items(), contour):
+        text = "ID {}".format(objectID)
         x, y, w, h = cv2.boundingRect(c)
+        cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
+                    CV_FONT, 0.4, TEXT_COLOR, 1, CV_AA)
+        cv2.circle(frame, (centroid[0], centroid[1]), 4, TEXT_COLOR, -1)
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
         # rect = cv2.minAreaRect(c)
         # box = cv2.boxPoints(rect)
@@ -141,8 +145,8 @@ def roi(frame):
     '''
     imshape = frame.shape
     vertices = np.array([[(0, imshape[0]/1.3),
-                          (450, 320),
-                          (770, 320),
+                          (350, 390),
+                          (850, 390),
                           (imshape[1], imshape[0]),
                           (0, imshape[0])]
                          ], dtype=np.int32)
@@ -160,4 +164,4 @@ def compare(array):
     '''
     for i in range(len(array)):
         for j in range(i + 1, len(array)):
-            print(array[i], array[j], '\n')
+            return array[i]-array[j]

@@ -16,7 +16,7 @@ class LaneDetector:
                 Minimum number of votes/intersections in Hough grid cell.
     '''
 
-    def __init__(self, height, width, rho=5, lThresh=150, sig=0.33, sThresh=7):
+    def __init__(self, height, width, rho=1, lThresh=150, sig=0.33, sThresh=7):
         self.rho = rho
         self.sig = sig
         self.lThresh = lThresh
@@ -26,6 +26,7 @@ class LaneDetector:
         self.frame = None
         self.points = None
         self.kernel = np.ones((15, 15), np.uint8)
+        self.count = 0
 
     def update(self, frame):
         '''
@@ -34,10 +35,14 @@ class LaneDetector:
                 @param frame: List
                     Numpy array of an image.
         '''
-        if self.canny(frame):
-            if self.drawLanes():
-                return self.averageLines()
-                # return self.points
+        self.count += 1
+        if self.count > 150:
+            if self.canny(frame):
+                if self.drawLanes():
+                    if self.averageLines():
+                        return self.points
+                else:
+                    print("failed ...")
         return False
 
     def canny(self, frame):
@@ -68,16 +73,19 @@ class LaneDetector:
         angles = []
         for line in self.points:
             params = np.polyfit(line[0], line[1], 1)
-            angles.append((math.degrees((math.atan(params[0]))), params[1]))
-        angles.sort()
-        # print(angles)
-        return self.averageSlopes(angles)
+            # print(math.degrees(math.atan(slope)))
+            print(params[1])
+            angles.append((math.degrees(math.atan(params[0])), params[1]))
+        # angles.sort()
+        # print(angles, "\n")
+        self.points = angles
+        return self.mapOrdinates()
 
-    def averageSlopes(self, angles):
-        head = angles[0][0]
+    def averageSlopes(self):
+        head = self.points[0][0]
         buffer = []
         temp = []
-        for angle, intercept in angles[1:]:
+        for angle, intercept in self.points[1:]:
             if angle >= 86 and angle < 120:
                 continue
             if angle-head <= self.sThresh:
@@ -92,39 +100,49 @@ class LaneDetector:
                     buffer.append(temp)
                 head = angle
                 temp = []
-        averaged = list(np.average(items, axis=0) for items in buffer)
-        return self.mapOrdinates(averaged)
+        self.points = list(np.average(items, axis=0) for items in buffer)
+        return True
 
-    def mapOrdinates(self, ordinates):
+    def averageIntercepts(self):
+        head = self.points[0][1]
+        buffer = []
+        temp = []
+        for angle, intercept in self.points[1:]:
+            if intercept > self.height and intercept < 0:
+                continue
+            if intercept-head <= self.sThresh:
+                temp.append((angle, intercept))
+            else:
+                if len(temp) == 0:
+                    buffer.append([(angle, intercept)])
+                else:
+                    buffer.append(temp)
+                head = intercept
+                temp = []
+        self.points = list(np.average(items, axis=0) for items in buffer)
+        return True
+
+    def mapOrdinates(self):
         '''
             Convert angles to tan inverse.
             find new x and y based on these new points.
             first normalize them with numpy.
         '''
         ords = []
-        for angle, intercept in ordinates:
+        for angle, intercept in self.points:
             slope = math.tan(angle)
             try:
-                if self.height >= intercept >= self.height/1.3:
+                if intercept <= self.height:
                     x1 = 0
                     y1 = int(intercept)
+                    x2 = (320-intercept)/slope
                 else:
-                    x1 = int((320-intercept)/slope)
-                    x2 = int((self.height-intercept)/slope)
+                    x1 = int((self.height-intercept)/slope)
+                    x2 = int((320-intercept)/slope)
                     y1 = int(self.height)
-                if 450 <= x2 <= 770 and 0 <= x1 <= self.width:
-                    ords.append([(x1, y1), (x2, 320)])
-                else:
-                    if x2 > 770:
-                        x2 = 770
-                    if x2 < 450:
-                        x2 = 450
-                    if x1 > self.width:
-                        x1 = int(self.width)
-                    if x1 < 0:
-                        x1 = 0
-                    ords.append([(x1, int(self.height)), (x2, 320)])
-
+                # print(x1, x2, y1)
+                ords.append([(x1, int(self.height)), (x2, 320)])
             except Exception as e:
-                continue
-        return ords
+                print(e)
+        self.points = ords
+        return True
