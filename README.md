@@ -10,8 +10,8 @@
 
     python3 -m venv .
 
-    pip install opencv-python opencv-contrib-python numpy scipy
-
     source bin/activate
+
+    pip install opencv-python opencv-contrib-python numpy scipy
 
     python src/app.py
