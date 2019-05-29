@@ -37,7 +37,7 @@ def video(dir, name="processed.mp4"):
         return False
 
 
-def getCapture(device=0):
+def getCap(device=0):
     '''
         Gets media capture from a device.
         Parameters
@@ -50,7 +50,7 @@ def getCapture(device=0):
         return cap
 
 
-def getBoundingBoxes(contour, objects, frame):
+def getBBoxes(contour, objects, frame):
     '''
         Draws rectangles around contours.
         Parameters
@@ -111,7 +111,7 @@ def findHull(contour):
     return list(cv2.convexHull(x) for x in contour)
 
 
-def approximateContours(contours):
+def approxCnt(contours):
     smooth = smoothContours(contours)
     return findHull(smooth)
 
@@ -127,10 +127,12 @@ def getBoxes(contour):
     if contour is None:
         return []
     boxes = []
+    area = 0
     for c in contour:
+        area += cv2.contourArea(c)
         x, y, w, h = cv2.boundingRect(c)
         boxes.append((x, y, x+w, y+h))
-    return boxes  # list(cv2.boundingRect(c) for c in contour)
+    return boxes, area  # list(cv2.boundingRect(c) for c in contour)
 
 
 def roi(frame):
