@@ -5,7 +5,7 @@ import asyncio
 from tasks import LaneDetector
 from tracker import CentroidTracker
 from extractor import Extractors
-from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA
+from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
 from utils import roi, getBoxes, getCap, approxCnt, getBBoxes
 print('using OpenCV {}'.format(cv.__version__))
 
@@ -26,7 +26,7 @@ async def detectVehicles(frame):
     boxes, area = getBoxes(hulls)
     objects = tracker.update(boxes)
     if len(boxes) > 0:
-        tracker.density(int(area/len(boxes)))
+        tracker.density(int(area))
     else:
         tracker.density(area)
     frame = getBBoxes(hulls, objects, frame)
@@ -59,8 +59,9 @@ async def main():
                    0.8, TEXT_COLOR, 1, CV_AA)
         cv.putText(detection, "Count: {}".format(tracker.count()), (20, 80),
                    CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
-        cv.putText(detection, "Density: {}".format(tracker.density()),
-                   (20, 115), CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+        cv.putText(detection, "Density: {:.3f}%".format(tracker.density()*100 /
+                   ROI_AREA), (20, 115), CV_FONT, 0.8, TEXT_COLOR,
+                   1, CV_AA)
         cv.imshow('frame', detection)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break

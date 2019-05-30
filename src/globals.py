@@ -4,7 +4,7 @@ from numpy import pi
 from os.path import dirname, abspath, join
 from cv2 import FONT_HERSHEY_SIMPLEX, LINE_AA
 
-# ROI_AREA =
+ROI_AREA = 534632-100000
 CV_FONT = FONT_HERSHEY_SIMPLEX
 TEXT_COLOR = (255, 255, 255)
 CV_AA = LINE_AA
