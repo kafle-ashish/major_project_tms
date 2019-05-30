@@ -39,8 +39,9 @@ class LaneDetector:
         if self.count > 150:
             if self.canny(frame):
                 if self.drawLanes():
-                    if self.averageLines():
-                        return self.points
+                    self.points.sort()
+                    self.averagePoints()
+                    return self.points
                 else:
                     print("failed ...")
         return False
@@ -66,83 +67,19 @@ class LaneDetector:
         self.points = points
         return True
 
-    def averageLines(self):
-        '''
-            Averages over a list of line points.
-        '''
-        angles = []
-        for line in self.points:
-            params = np.polyfit(line[0], line[1], 1)
-            # print(math.degrees(math.atan(slope)))
-            print(params[1])
-            angles.append((math.degrees(math.atan(params[0])), params[1]))
-        # angles.sort()
-        # print(angles, "\n")
-        self.points = angles
-        return self.mapOrdinates()
-
-    def averageSlopes(self):
-        head = self.points[0][0]
+    def averagePoints(self):
+        head = self.points[0]
         buffer = []
         temp = []
-        for angle, intercept in self.points[1:]:
-            if angle >= 86 and angle < 120:
-                continue
-            if angle-head <= self.sThresh:
-                # print("Threshold has been met.....")
-                temp.append((angle, intercept))
+        for point in self.points[1:]:
+            if point[0][0] - head[0][0] < 20:
+                temp.append(point)
+                head = point
             else:
-                if len(temp) == 0:
-                    # print("Threshold exceeded. Temp is empty...")
-                    buffer.append([(angle, intercept)])
-                else:
-                    # print("Threshold exceeded....")
+                if len(temp) > 0:
                     buffer.append(temp)
-                head = angle
-                temp = []
-        self.points = list(np.average(items, axis=0) for items in buffer)
-        return True
-
-    def averageIntercepts(self):
-        head = self.points[0][1]
-        buffer = []
-        temp = []
-        for angle, intercept in self.points[1:]:
-            if intercept > self.height and intercept < 0:
-                continue
-            if intercept-head <= self.sThresh:
-                temp.append((angle, intercept))
-            else:
-                if len(temp) == 0:
-                    buffer.append([(angle, intercept)])
+                    temp = []
                 else:
-                    buffer.append(temp)
-                head = intercept
-                temp = []
+                    buffer.append([point])
+                head = point
         self.points = list(np.average(items, axis=0) for items in buffer)
-        return True
-
-    def mapOrdinates(self):
-        '''
-            Convert angles to tan inverse.
-            find new x and y based on these new points.
-            first normalize them with numpy.
-        '''
-        ords = []
-        for angle, intercept in self.points:
-            slope = math.tan(angle)
-            try:
-                if intercept <= self.height:
-                    x1 = 0
-                    y1 = int(intercept)
-                    x2 = (320-intercept)/slope
-                else:
-                    x1 = int((self.height-intercept)/slope)
-                    x2 = int((320-intercept)/slope)
-                    y1 = int(self.height)
-                # print(x1, x2, y1)
-                ords.append([(x1, int(self.height)), (x2, 320)])
-            except Exception as e:
-                print(e)
-        self.points = ords
-        return True

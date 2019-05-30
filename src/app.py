@@ -3,10 +3,10 @@ import cv2 as cv
 import asyncio
 
 from tasks import LaneDetector
-from tracker import CentroidTracker
 from extractor import Extractors
-from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
+from tracker import CentroidTracker
 from utils import roi, getBoxes, getCap, approxCnt, getBBoxes
+from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
 print('using OpenCV {}'.format(cv.__version__))
 
 cap = getCap('{}/one.mp4'.format(VID_DATA_DIR))
@@ -44,15 +44,16 @@ async def main():
 
         _, frame = cap.read()
         detection, ret = await detectVehicles(roi(frame))
-        # averagedLines = await detectLanes(frame)
+        averagedLines = await detectLanes(frame)
         # for points in lines:
         #     cv.line(detection, points[0], points[1], (255, 0, 0), 5)
-        # if averagedLines is not False:
-        #     for points in averagedLines:
-        #         try:
-        #             cv.line(detection, points[0], points[1], (255, 0, 0), 5)
-        #         except Exception as e:
-        #             continue
+        if averagedLines is not False:
+            for points in averagedLines:
+                try:
+                    cv.line(detection, (int(points[0][0]), int(points[0][1])),
+                            (int(points[1][0]), int(points[1][1])), (255, 0, 0), 5)
+                except Exception as e:
+                    print(e)
         end = cv.getTickCount()
         fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
         cv.putText(detection, fps, (20, 50), CV_FONT,
