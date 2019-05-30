@@ -45,13 +45,13 @@ async def main():
         _, frame = cap.read()
         detection, ret = await detectVehicles(roi(frame))
         averagedLines = await detectLanes(frame)
-        # for points in lines:
-        #     cv.line(detection, points[0], points[1], (255, 0, 0), 5)
         if averagedLines is not False:
             for points in averagedLines:
                 try:
-                    cv.line(detection, (int(points[0][0]), int(points[0][1])),
-                            (int(points[1][0]), int(points[1][1])), (255, 0, 0), 5)
+                    cv.line(detection, (int(points[0][0]),
+                                        int(points[0][1])),
+                            (int(points[1][0]),
+                             int(points[1][1])), (255, 0, 0), 5)
                 except Exception as e:
                     print(e)
         end = cv.getTickCount()
@@ -61,8 +61,8 @@ async def main():
         cv.putText(detection, "Count: {}".format(tracker.count()), (20, 80),
                    CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
         cv.putText(detection, "Density: {:.3f}%".format(tracker.density()*100 /
-                   ROI_AREA), (20, 115), CV_FONT, 0.8, TEXT_COLOR,
-                   1, CV_AA)
+                                                        ROI_AREA), (20, 115),
+                   CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
         cv.imshow('frame', detection)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
