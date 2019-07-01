@@ -1,7 +1,10 @@
 
 import cv2 as cv
+import requests
 import asyncio
+import json
 
+from rest import Rest
 from tasks import LaneDetector
 from extractor import Extractors
 from tracker import CentroidTracker
@@ -9,6 +12,7 @@ from utils import roi, getBoxes, getCap, approxCnt, getBBoxes
 from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
 print('using OpenCV {}'.format(cv.__version__))
 
+req = Rest()
 cap = getCap('{}/one.mp4'.format(VID_DATA_DIR))
 tracker = CentroidTracker()
 ex = Extractors(roi(cap.read()[1]))
@@ -39,8 +43,9 @@ async def detectLanes(frame):
 
 
 async def main():
+    MAX_COUNTED = 0
     while cap.isOpened():
-        start = cv.getTickCount()
+        # start = cv.getTickCount()
 
         _, frame = cap.read()
         detection, ret = await detectVehicles(roi(frame))
@@ -54,21 +59,30 @@ async def main():
                              int(points[1][1])), (255, 0, 0), 5)
                 except Exception as e:
                     print(e)
-        end = cv.getTickCount()
-        fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
-        cv.putText(detection, fps, (20, 50), CV_FONT,
-                   0.8, TEXT_COLOR, 1, CV_AA)
-        cv.putText(detection, "Count: {}".format(tracker.count()), (20, 80),
-                   CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
-        cv.putText(detection, "Density: {:.3f}%".format(tracker.density()*100 /
-                                                        ROI_AREA), (20, 115),
-                   CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+        # end = cv.getTickCount()
+        # fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
+        # cv.putText(detection, fps, (20, 50), CV_FONT,
+        #            0.8, TEXT_COLOR, 1, CV_AA)
+        # cv.putText(detection, "Count: {}".format(tracker.count()), (20, 80),
+        #            CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+        # cv.putText(detection, "Density:
+        # {:.3f}%".format(tracker.density()*100 /
+        # ROI_AREA), (20, 115),
+        # CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+        count = tracker.count()
+        if count > MAX_COUNTED:
+            MAX_COUNTED = count
+
         cv.imshow('frame', detection)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
     cv.destroyAllWindows()
     cap.release()
 
-
 if __name__ == '__main__':
     asyncio.run(main())
+    # payload = dict(pos="chyasal", status="medium", density=12, count=123)
+    # r = requests.post('http://localhost:3000/traffic/',
+    #                   data=payload)
+    # # r = requests.get('https://tmsbackend.herokuapp.com/traffic/')
+    # print(r.content)
