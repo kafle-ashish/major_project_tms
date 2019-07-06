@@ -62,6 +62,8 @@ def getBBoxes(contour, objects, frame):
                 Numpy array of an image.
     '''
     for (objectID, centroid), c in zip(objects.items(), contour):
+        # if centroid[0]-720 == 20 or centroid[0] - 390 == 20:
+        #     print(centroid, " found.")
         text = "ID {}".format(objectID)
         x, y, w, h = cv2.boundingRect(c)
         cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),

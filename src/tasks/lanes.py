@@ -4,6 +4,7 @@ from utils import roi
 import numpy as np
 import math
 from globals import MAX_LINE_GAP, MIN_LINE_LENGTH, THETA
+from scipy.spatial import distance as dist
 
 
 class LaneDetector:
@@ -24,9 +25,23 @@ class LaneDetector:
         self.height = height
         self.width = width
         self.frame = None
-        self.points = None
         self.kernel = np.ones((15, 15), np.uint8)
         self.count = 0
+        self.points = None
+        self.trackedPoints = {}
+        self.objectID = 1
+        self.skip = False
+
+    def register(self, points):
+        self.trackedPoints[self.objectID] = points
+        self.objectID += 1
+        # print(self.trackedPoints)
+        # pass
+
+    def deregister(self, id):
+        del self.trackedPoints[id]
+        print(self.trackedPoints)
+        # pass
 
     def update(self, frame):
         '''
@@ -35,25 +50,24 @@ class LaneDetector:
                 @param frame: List
                     Numpy array of an image.
         '''
-        self.count += 1
+        if self.skip:
+            return self.points, True
+
+        if self.count > 158:
+                self.skip = True
+        else:
+            self.count += 1
+
         if self.count > 150:
-            if self.canny(frame):
-                if self.drawLanes():
-                    self.points.sort()
-                    self.averagePoints()
-                    return self.points
-                else:
-                    print("failed ...")
-        return False
+            self.canny(frame)
+            return self.points, False
+        return False, False
 
     def canny(self, frame):
         v = np.median(frame)
         lower = int(max(0, (1.0 - self.sig) * v))
         upper = int(min(255, (1.0 + self.sig) * v))
         self.frame = roi(cv2.Canny(frame, lower, upper))
-        return True
-
-    def drawLanes(self):
         '''
             Draws possible lanes from an edged frame.
         '''
@@ -65,9 +79,7 @@ class LaneDetector:
             for x1, y1, x2, y2 in line:
                 points.append([(x1, y1), (x2, y2)])
         self.points = points
-        return True
-
-    def averagePoints(self):
+        self.points.sort()
         head = self.points[0]
         buffer = []
         temp = []

@@ -44,14 +44,18 @@ async def detectLanes(frame):
 
 async def main():
     MAX_COUNTED = 0
-    while cap.isOpened():
-        # start = cv.getTickCount()
+    averaged = []
+    SKIP = False
+    status = False
+    averagedLines = False
 
+    while cap.isOpened():
+        start = cv.getTickCount()
         _, frame = cap.read()
         detection, ret = await detectVehicles(roi(frame))
-        averagedLines = await detectLanes(frame)
-        if averagedLines is not False:
-            for points in averagedLines:
+
+        if SKIP:
+            for points in averaged:
                 try:
                     cv.line(detection, (int(points[0][0]),
                                         int(points[0][1])),
@@ -59,17 +63,35 @@ async def main():
                              int(points[1][1])), (255, 0, 0), 5)
                 except Exception as e:
                     print(e)
-        # end = cv.getTickCount()
-        # fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
-        # cv.putText(detection, fps, (20, 50), CV_FONT,
-        #            0.8, TEXT_COLOR, 1, CV_AA)
-        # cv.putText(detection, "Count: {}".format(tracker.count()), (20, 80),
-        #            CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
-        # cv.putText(detection, "Density:
-        # {:.3f}%".format(tracker.density()*100 /
-        # ROI_AREA), (20, 115),
-        # CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+        else:
+            averagedLines, status = await detectLanes(frame)
+            if status:
+                averaged = averagedLines
+                SKIP = True
+                start = False
+                averagedLines = False
+            elif averagedLines:
+                # print(len(averagedLines))
+                for points in averagedLines:
+                    try:
+                        cv.line(detection, (int(points[0][0]),
+                                            int(points[0][1])),
+                                (int(points[1][0]),
+                                int(points[1][1])), (255, 0, 0), 5)
+                    except Exception as e:
+                        print(e)
+
+        end = cv.getTickCount()
+        fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
+        cv.putText(detection, fps, (20, 50), CV_FONT,
+                   0.8, TEXT_COLOR, 1, CV_AA)
+        cv.putText(detection, "Count: {}".format(tracker.count()), (20, 80),
+                   CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+        cv.putText(detection, "Density:{:.3f}%".format(tracker.density()*100 /
+                                                       ROI_AREA), (20, 115),
+                   CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
         count = tracker.count()
+        
         if count > MAX_COUNTED:
             MAX_COUNTED = count
 
