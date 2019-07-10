@@ -19,6 +19,10 @@ ex = Extractors(roi(cap.read()[1]))
 WIDTH = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
 HEIGHT = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 lanes = LaneDetector(HEIGHT, WIDTH)
+averaged = []
+SKIP = False
+status = False
+averagedLines = False
 
 
 async def detectVehicles(frame):
@@ -43,12 +47,7 @@ async def detectLanes(frame):
 
 
 async def main():
-    MAX_COUNTED = 0
-    averaged = []
-    SKIP = False
-    status = False
-    averagedLines = False
-
+    global SKIP
     while cap.isOpened():
         start = cv.getTickCount()
         _, frame = cap.read()
@@ -70,6 +69,7 @@ async def main():
                 SKIP = True
                 start = False
                 averagedLines = False
+                tracker.setBoundary(averaged)
             elif averagedLines:
                 # print(len(averagedLines))
                 for points in averagedLines:
@@ -77,7 +77,7 @@ async def main():
                         cv.line(detection, (int(points[0][0]),
                                             int(points[0][1])),
                                 (int(points[1][0]),
-                                int(points[1][1])), (255, 0, 0), 5)
+                                 int(points[1][1])), (255, 0, 0), 5)
                     except Exception as e:
                         print(e)
 
@@ -90,10 +90,6 @@ async def main():
         cv.putText(detection, "Density:{:.3f}%".format(tracker.density()*100 /
                                                        ROI_AREA), (20, 115),
                    CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
-        count = tracker.count()
-        
-        if count > MAX_COUNTED:
-            MAX_COUNTED = count
 
         cv.imshow('frame', detection)
         if cv.waitKey(1) & 0xFF == ord('q'):
