@@ -5,11 +5,11 @@ import numpy as np
 
 
 class CentroidTracker():
-    def __init__(self, maxDisappeared=1):
+    def __init__(self, maxDisappeared=1, bounding=None):
         self.nextObjectID = 0
         self.upCount = 0
         self.downCount = 0
-        self.bounding = None
+        self.bounding = bounding
         self.objects = OrderedDict()
         self.disappeared = OrderedDict()
         self.averageDensity = 0
@@ -20,7 +20,7 @@ class CentroidTracker():
         self.disappeared[self.nextObjectID] = 0
         self.nextObjectID += 1
         if self.bounding:
-            continue
+            pass
             # identify registered object motion direction
 
     def setBoundary(self, bounding):

@@ -12,11 +12,11 @@ class Extractors:
                             A numpy array of input image.
     '''
 
-    def __init__(self, frame):
+    def __init__(self):
         self.bg_sub = cv2.bgsegm.createBackgroundSubtractorMOG()
         self.kernel = np.ones((7, 7), np.uint8)
-        self.bg_avg = np.float32(frame)
-        self.frame = frame
+        self.frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+        self.bg_avg = np.float32(self.frame)
 
     def update(self, frame, jobType="bg"):
         self.frame = frame
