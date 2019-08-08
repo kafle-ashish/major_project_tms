@@ -12,78 +12,68 @@ from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
 
 
 def detectVehicles(frame, ex, tracker):
-    sub = ex.update(frame, "fg")
-    contours, _ = cv.findContours(
-        sub, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
-    )
-    hulls = approxCnt(contours)
-    boxes, area = getBoxes(hulls)
-    objects = tracker.update(boxes)
-    if len(boxes) > 0:
-        tracker.density(int(area))
-    else:
-        tracker.density(area)
-    frame = getBBoxes(hulls, objects, frame)
-    return frame, sub
+    try:
+        sub = ex.update(frame, "fg")
+        contours, _ = cv.findContours(
+            sub, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+        )
+        hulls = approxCnt(contours)
+        boxes, area = getBoxes(hulls)
+        objects = tracker.update(boxes)
+        if len(boxes) > 0:
+            tracker.density(int(area))
+        else:
+            tracker.density(area)
+        frame = getBBoxes(hulls, objects, frame)
+        return frame, contours
+    except Exception as e:
+        pass
 
 
 def detectLanes(frame, lanes, ex):
-    background = ex.update(frame)
-    return lanes.update(background)
+    try:
+        background = ex.update(frame)
+        return lanes.update(background)
+    except Exception as e:
+        pass
 
 
-def main(queue):
-    averaged = []
-    SKIP = False
-    status = False
+def main(queue, device=False):
+    SKIP = True
+    STATUS = False
     averagedLines = False
     tracker = CentroidTracker()
-    ex = Extractors()
-    cap = getCap('{}/one.mp4'.format(VID_DATA_DIR))
-    WIDTH = cap.get(cv.CAP_PROP_FRAME_WIDTH)   # float
-    HEIGHT = cap.get(cv.CAP_PROP_FRAME_HEIGHT)  # float
+    if device:
+        cap = getCap(device)
+    else:
+        cap = getCap('{}/one.mp4'.format(VID_DATA_DIR))
+    WIDTH = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))   # float
+    HEIGHT = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))  # float
+    ex = Extractors(HEIGHT, WIDTH)
     lanes = LaneDetector(HEIGHT, WIDTH)
     while cap.isOpened():
-        start = cv.getTickCount()
-        _, frame = cap.read()
-        detection, ret = detectVehicles(roi(frame), ex, tracker)
+        try:
+            start = cv.getTickCount()
+            _, frame = cap.read()
+            detection, ret = detectVehicles(roi(frame), ex, tracker)
+            if SKIP:
+                averagedLines, STATUS = detectLanes(frame, lanes, ex)
+            if STATUS:
+                tracker.setBoundary(averagedLines)
+                SKIP = False
+                STATUS = False
+            end = cv.getTickCount()
+            fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
 
-        if SKIP:
-            for points in averaged:
-                try:
-                    cv.line(detection, (int(points[0][0]),
-                                        int(points[0][1])),
-                            (int(points[1][0]),
-                             int(points[1][1])), (255, 0, 0), 5)
-                except Exception as e:
-                    print(e)
-        else:
-            averagedLines, status = detectLanes(frame, lanes, ex)
-            if status:
-                averaged = averagedLines
-                SKIP = True
-                start = False
-                averagedLines = False
-                tracker.setBoundary(averaged)
-            elif averagedLines:
-                # print(len(averagedLines))
-                for points in averagedLines:
-                    try:
-                        cv.line(detection, (int(points[0][0]),
-                                            int(points[0][1])),
-                                (int(points[1][0]),
-                                 int(points[1][1])), (255, 0, 0), 5)
-                    except Exception as e:
-                        print(e)
-
-        end = cv.getTickCount()
-        fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
-
-        cv.imshow('frame', detection)
-        queue.put({"name": mp.current_process().name, "count": tracker.count(),
-                   "density": tracker.density()*100/ROI_AREA, "fps": fps})
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
+            # cv.imshow('frame', detection)
+            queue.put({"name": mp.current_process().name, "count":
+                       tracker.count(), "density": tracker.density() *
+                       100/ROI_AREA, "fps": fps})
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+        except:
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
     cv.destroyAllWindows()
     cap.release()
 
@@ -94,3 +84,12 @@ def main(queue):
 # cv.putText(detection, "Density:{:.3f}%".format(tracker.density()*100 /
 #                                                ROI_AREA), (20, 115),
 #            CV_FONT, 0.8, TEXT_COLOR, 1, CV_AA)
+# if STATUS == SKIP:
+#     for points in averagedLines:
+#         try:
+#             cv.line(detection, (int(points[0][0]),
+#                                 int(points[0][1])),
+#                     (int(points[1][0]),
+#                      int(points[1][1])), (255, 0, 0), 5)
+#         except Exception as e:
+#             print(e)

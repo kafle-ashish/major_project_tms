@@ -45,9 +45,7 @@ def getCap(device=0):
             @params: device: Integer
             @returns: cap: Device capture
     '''
-    cap = cv2.VideoCapture(device)
-    if cap.isOpened():
-        return cap
+    return cv2.VideoCapture(device)
 
 
 def getBBoxes(contour, objects, frame):

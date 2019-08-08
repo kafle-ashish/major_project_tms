@@ -9,8 +9,10 @@ class CentroidTracker():
         self.nextObjectID = 0
         self.upCount = 0
         self.downCount = 0
-        self.bounding = bounding
+        self.lanes = None
+        self.divider = False
         self.objects = OrderedDict()
+        self.position = OrderedDict()
         self.disappeared = OrderedDict()
         self.averageDensity = 0
         self.maxDisappeared = maxDisappeared
@@ -19,12 +21,17 @@ class CentroidTracker():
         self.objects[self.nextObjectID] = centroid
         self.disappeared[self.nextObjectID] = 0
         self.nextObjectID += 1
-        if self.bounding:
+        if self.divider:
             pass
             # identify registered object motion direction
 
+    def getBoundary(self):
+        return self.divider
+
     def setBoundary(self, bounding):
-        self.bounding = bounding
+        self.lanes = bounding
+        self.divider = bounding[int(len(bounding)/2)]
+        # print(len(bounding))
 
     def deregister(self, objectID):
         del self.objects[objectID]
