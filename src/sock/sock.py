@@ -3,7 +3,7 @@ import pickle
 
 
 class Sock:
-    def __init__(self, ip='192.168.43.144', port=5005, buffer=20, header=10):
+    def __init__(self, ip='192.168.1.13', port=5005, buffer=20, header=10):
         self.TCP_IP = ip
         self.TCP_PORT = port
         self.BUFFER_SIZE = buffer
@@ -24,10 +24,8 @@ class Sock:
 
     def send(self, data):
         try:
-            message = pickle.dumps(data)
-            message = bytes(f"{len(msg):<{self.HEADER_SIZE}}", 'utf-8')+message
-            self.s.send(message)
+            self.s.send(data.encode())
             data = self.s.recv(self.BUFFER_SIZE)
-            return pickle.loads(data)
+            return data.decode()
         except Exception as e:
             return e

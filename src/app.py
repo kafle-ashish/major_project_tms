@@ -1,9 +1,11 @@
 import multiprocessing as mp
-from time import time
+from time import time, sleep
 import cv2 as cv
+import pickle
 
 from multiprocessing import Process, Pool, Queue
 from main import main
+from sock import Sock
 # from priority import DataQueue
 print('using OpenCV {}'.format(cv.__version__))
 
@@ -30,18 +32,26 @@ def monitor(queue):
 
 
 if __name__ == '__main__':
-    queue = Queue()
-    p = Process(name="east", target=main, args=(queue,))
+    conn = Sock()
+    conn.connect()
+    data = 'ON'
+    ret = conn.send(data)
+    print(ret)
+    sleep(5)
+    conn.send("OFF")
+
+    # queue = Queue()
+    # p = Process(name="east", target=main, args=(queue,))
     # q = Process(name="west", target=main, args=(queue,))
     # m = Process(name="monitor", target=monitor, args=(queue,))
     # q.start()
-    p.start()
+    # p.start()
     # m.start()
-    p.join()
+    # p.join()
     # q.join()
     # m.join()
-    queue.close()
-    queue.join_thread()
+    # queue.close()
+    # queue.join_thread()
     # payload = dict(pos="chyasal", status="medium", density=12, count=123)
     # r = requests.post('http://localhost:3000/traffic/',
     #                   data=payload)
