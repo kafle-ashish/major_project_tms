@@ -40,7 +40,7 @@ class LaneDetector:
 
     def deregister(self, id):
         del self.trackedPoints[id]
-        print(self.trackedPoints)
+        # print(self.trackedPoints)
         # pass
 
     def update(self, frame):
@@ -74,6 +74,7 @@ class LaneDetector:
         closing = cv2.morphologyEx(self.frame, cv2.MORPH_CLOSE, self.kernel)
         lines = cv2.HoughLinesP(closing, self.rho, THETA, self.lThresh,
                                 np.array([]), MIN_LINE_LENGTH, MAX_LINE_GAP)
+        # print("line length is", len(lines))
         points = []
         for line in lines:
             for x1, y1, x2, y2 in line:

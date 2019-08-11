@@ -27,6 +27,7 @@ def detectVehicles(frame, ex, tracker):
         frame = getBBoxes(hulls, objects, frame)
         return frame, contours
     except Exception as e:
+        # print(e, "Vehicle detection")
         pass
 
 
@@ -35,27 +36,26 @@ def detectLanes(frame, lanes, ex):
         background = ex.update(frame)
         return lanes.update(background)
     except Exception as e:
+        # print(e, "lane detection")
         pass
 
 
-def main(queue, device=False):
+def main(queue, device):
     SKIP = True
     STATUS = False
     averagedLines = False
     tracker = CentroidTracker()
-    if device:
-        cap = getCap(device)
-    else:
-        cap = getCap('{}/one.mp4'.format(VID_DATA_DIR))
+    cap = getCap(device)
     WIDTH = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))   # float
     HEIGHT = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))  # float
     ex = Extractors(HEIGHT, WIDTH)
     lanes = LaneDetector(HEIGHT, WIDTH)
-    while cap.isOpened():
+    while True:
+        # print("looping")
         try:
             start = cv.getTickCount()
             _, frame = cap.read()
-            detection, ret = detectVehicles(roi(frame), ex, tracker)
+            detection, ret = detectVehicles(frame, ex, tracker)
             if SKIP:
                 averagedLines, STATUS = detectLanes(frame, lanes, ex)
             if STATUS:
@@ -65,13 +65,14 @@ def main(queue, device=False):
             end = cv.getTickCount()
             fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
 
-            # cv.imshow('frame', detection)
+            cv.imshow('frame', detection)
             queue.put({"name": mp.current_process().name, "count":
                        tracker.count(), "density": tracker.density() *
                        100/ROI_AREA, "fps": fps})
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
-        except:
+        except Exception as e:
+            # print(e, "exception")
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
     cv.destroyAllWindows()

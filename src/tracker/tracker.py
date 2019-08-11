@@ -29,9 +29,10 @@ class CentroidTracker():
         return self.divider
 
     def setBoundary(self, bounding):
-        self.lanes = bounding
-        self.divider = bounding[int(len(bounding)/2)]
-        # print(len(bounding))
+        if bounding is not None:
+            self.lanes = bounding
+            if len(bounding) > 2:
+                self.divider = bounding[int(len(bounding)/2)]
 
     def deregister(self, objectID):
         del self.objects[objectID]
