@@ -7,6 +7,7 @@ from multiprocessing import Process, Pool, Queue
 from globals import VID_DATA_DIR
 from main import main
 from sock import Sock
+from priority import Watcher
 
 names = ['1a', '2a', '1b', '2b']
 servers = ['{}/one.mp4'.format(VID_DATA_DIR) for _ in range(4)]
@@ -14,39 +15,34 @@ print('using OpenCV {}'.format(cv.__version__))
 
 
 def monitor(queue):
-    FUTURE = 0
-    AWARD = []
-    TIME = 45
-    buffer = {'1a': [0, 0], '2a': [0, 0], '1b': [0, 0], '2b': [0, 0]}
-    GO = ['2a', '2b']
-    STOP = ['1a', '1b']
+    conn = Sock(ip="192.168.43.144")
+    conn.connect()
+    conn.send("ON;ONE")
+    conn.disconnect()
+    watch = Watcher()
     while True:
         end = time() + TIME + FUTURE
         while time() <= end:
             traffic = queue.get()
-            buffer[traffic['name']][0] = traffic['count']
-            buffer[traffic['name']][1] = traffic['density']
-        count_GO = buffer[GO[0]][0] + buffer[GO[1]][0]
-        count_STOP = buffer[STOP[0]][0] + buffer[STOP[1]][0]
-        if count_GO > count_STOP:
-            AWARD = GO
-            FUTURE = 15
+            watch.update(traffic)
+        average, award, future, active = watch.getStatus()
+        if active[0] == '2a':
+            conn.send("ON;TWO")
         else:
-            FUTURE = 0
-            AWARD = []
-        GO, STOP = STOP, GO
+            conn.send("ON;ONE")
 
 
 if __name__ == '__main__':
     queue = Queue()
-    m = Process(target=monitor, args=(queue))
-    processes = [Process(name=name, target=main, args=(queue, video))
-                 for i, name, video in zip(range(4), names, servers)]
-    m.start()
-    p.start() for p in processes
-    p.join() for p in processes
-    m.join()
+    # m = Process(target=monitor, args=(queue))
+    # processes = [Process(name=name, target=main, args=(queue, video))
+    #              for i, name, video in zip(range(4), names, servers)]
+    # m.start()
+    # p.start() for p in processes
+    # p.join() for p in processes
+    # m.join()
 
+    main(queue, '{}/one.mp4'.format(VID_DATA_DIR))
     queue.close()
     queue.join_thread()
 

@@ -146,11 +146,19 @@ def roi(frame):
                 Numpy array of an image.
     '''
     imshape = frame.shape
+    '''
     vertices = np.array([[(0, imshape[0]/1.3),
                           (350, 390),
                           (850, 390),
                           (imshape[1], imshape[0]),
                           (0, imshape[0])]
+                         ], dtype=np.int32)
+    '''
+    vertices = np.array([[(500, imshape[0]),
+                          (600, 390),
+                          (850, 390),
+                          (imshape[1], imshape[0]),
+                          (500, imshape[0])]
                          ], dtype=np.int32)
     mask = np.zeros(imshape, dtype=np.uint8)
     cv2.fillPoly(mask, vertices, (255, 255, 255))

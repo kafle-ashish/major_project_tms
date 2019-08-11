@@ -21,10 +21,6 @@ def closeAll():
         led[1].off()
 
 
-def ON(led):
-    led.on()
-
-
 def onPair(ledA, ledB):
     ledA.on()
     ledB.on()
@@ -35,40 +31,18 @@ def offPair(ledA, ledB):
     ledB.off()
 
 
-def OFF(led):
-    led.off()
-
-
 def switchCommand(command, id):
     if command == 'ON':
         print(command, id)
-        if id == 'ONEA':
-            ON(oneA[1])
-            OFF(oneA[0])
-        if id == 'ONEB':
-            ON(oneB[1])
-            OFF(oneB[0])
-        if id == 'TWOA':
-            ON(twoA[1])
-            OFF(twoA[0])
-        if id == 'TWOB':
-            ON(twoB[1])
-            OFF(twoB[0])
+        if id == 'ONE':
+            closeAll()
+            onPair(oneA[1], oneB[1])
+            onPair(twoA[0], twoB[0])
+        if id == "TWO":
+            closeAll()
+            onPair(oneA[0], oneB[0])
+            onPair(twoA[1], twoB[1])
     if command == 'OFF':
-        print(command, id)
-        if id == 'ONEA':
-            OFF(oneA[1])
-            ON(oneA[0])
-        if id == 'ONEB':
-            OFF(oneB[1])
-            ON(oneB[0])
-        if id == 'TWOA':
-            OFF(twoA[1])
-            ON(twoA[0])
-        if id == 'TWOB':
-            OFF(twoB[1])
-            ON(twoB[0])
-    if command == "ALL":
         closeAll()
 
 

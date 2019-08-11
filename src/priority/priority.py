@@ -24,7 +24,7 @@ class Watcher:
             self.average[key][0] = values[0]/iters
             self.average[key][1] = values[1]/iters
         compare()
-        return self.average
+        return self.average, self.AWARD, self.FUTURE, self.GO
 
     def compare(self):
         count_GO = self.average[self.GO[0]][0] + self.average[self.GO[1]][0]
@@ -35,3 +35,5 @@ class Watcher:
         else:
             self.FUTURE = 0
             self.AWARD = []
+
+        self.GO, self.STOP = self.STOP, self.GO

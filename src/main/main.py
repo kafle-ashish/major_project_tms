@@ -41,27 +41,40 @@ def detectLanes(frame, lanes, ex):
 
 
 def main(queue, device):
-    SKIP = True
-    STATUS = False
-    averagedLines = False
+    # SKIP = True
+    # STATUS = False
+    # averagedLines = False
     tracker = CentroidTracker()
     cap = getCap(device)
     WIDTH = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))   # float
     HEIGHT = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))  # float
     ex = Extractors(HEIGHT, WIDTH)
-    lanes = LaneDetector(HEIGHT, WIDTH)
+    # lanes = LaneDetector(HEIGHT, WIDTH)
     while True:
         # print("looping")
         try:
             start = cv.getTickCount()
             _, frame = cap.read()
-            detection, ret = detectVehicles(frame, ex, tracker)
-            if SKIP:
-                averagedLines, STATUS = detectLanes(frame, lanes, ex)
-            if STATUS:
-                tracker.setBoundary(averagedLines)
-                SKIP = False
-                STATUS = False
+            detection, ret = detectVehicles(roi(frame), ex, tracker)
+            if len(ret) == 0 and tracker.count() > 10:
+                subtracted = ex.subtractor()
+                subtracted = cv.cvtColor(subtracted, cv.COLOR_RGB2GRAY)
+                cnts, _ = cv.findContours(
+                    subtracted, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+                )
+                hulls = approxCnt(cnts)
+                boxes, area = getBoxes(hulls)
+                if len(boxes) > 0 and len(boxes) < 5:
+                    print(len(boxes))
+                    tracker.density(area)
+                    tracker.reset()
+
+            # if SKIP:
+            #     averagedLines, STATUS = detectLanes(frame, lanes, ex)
+            # if STATUS:
+            #     tracker.setBoundary(averagedLines)
+            #     SKIP = False
+            #     STATUS = False
             end = cv.getTickCount()
             fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
 
@@ -72,7 +85,7 @@ def main(queue, device):
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
         except Exception as e:
-            # print(e, "exception")
+            print(e, "exception")
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
     cv.destroyAllWindows()

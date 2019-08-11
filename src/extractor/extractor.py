@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from globals import BG_IMG_DATA
+from utils import roi
 
 
 class Extractors:
@@ -17,6 +18,7 @@ class Extractors:
         self.kernel = np.ones((7, 7), np.uint8)
         self.frame = np.zeros((height, width, 3), dtype=np.uint8)
         self.bg_avg = np.float32(self.frame)
+        self.res = None
 
     def update(self, frame, jobType="bg"):
         self.frame = frame
@@ -36,6 +38,7 @@ class Extractors:
         '''
         sub = self.bg_sub.apply(self.frame)
         closing = cv2.morphologyEx(sub, cv2.MORPH_CLOSE, self.kernel)
+        self.extractBackground()
         return closing
 
     def extractBackground(self):
@@ -49,8 +52,10 @@ class Extractors:
                         Background extracted frame.
         '''
         cv2.accumulateWeighted(self.frame, self.bg_avg, 0.01)
-        res = cv2.convertScaleAbs(self.bg_avg)
-        return res
+        self.res = cv2.convertScaleAbs(self.bg_avg)
+        return self.res
 
     def subtractor(self):
-        return cv2.subtract(cv2.imread(BG_IMG_DATA), self.frame)
+        subtracted = cv2.subtract(roi(self.res), self.frame)
+        # cv2.imshow('sub', subtracted)
+        return subtracted
