@@ -8,7 +8,7 @@ from extractor import Extractors
 from tracker import CentroidTracker
 
 from utils import roi, getBoxes, getCap, approxCnt, getBBoxes
-from globals import VID_DATA_DIR, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
+from globals import STOP, TEXT_COLOR, CV_FONT, CV_AA, ROI_AREA
 
 
 def detectVehicles(frame, ex, tracker):
@@ -17,6 +17,7 @@ def detectVehicles(frame, ex, tracker):
         contours, _ = cv.findContours(
             sub, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
         )
+        print(len(contours))
         hulls = approxCnt(contours)
         boxes, area = getBoxes(hulls)
         objects = tracker.update(boxes)
@@ -45,29 +46,39 @@ def main(queue, device):
     # STATUS = False
     # averagedLines = False
     tracker = CentroidTracker()
-    cap = getCap(device)
-    WIDTH = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))   # float
-    HEIGHT = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))  # float
+    if device is STOP:
+        cap = None
+        frame = cv.imread(STOP)
+        HEIGHT, WIDTH, _ = frame.shape
+    else:
+        cap = getCap(device)
+        WIDTH = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))   # float
+        HEIGHT = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))  # float
     ex = Extractors(HEIGHT, WIDTH)
     # lanes = LaneDetector(HEIGHT, WIDTH)
     while True:
         # print("looping")
         try:
             start = cv.getTickCount()
-            _, frame = cap.read()
+            if cap is not None:
+                _, frame = cap.read()
             detection, ret = detectVehicles(roi(frame), ex, tracker)
-            if len(ret) == 0 and tracker.count() > 10:
+            if len(ret) == 0:
                 subtracted = ex.subtractor()
-                subtracted = cv.cvtColor(subtracted, cv.COLOR_RGB2GRAY)
+                _, threshold = cv.threshold(
+                    subtracted, 50, 255, cv.THRESH_BINARY)
+                subtracted = cv.cvtColor(threshold, cv.COLOR_RGB2GRAY)
+                cv.imshow("sbu", subtracted)
                 cnts, _ = cv.findContours(
                     subtracted, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
                 )
                 hulls = approxCnt(cnts)
                 boxes, area = getBoxes(hulls)
-                if len(boxes) > 0 and len(boxes) < 5:
+                if len(boxes) > 0 and len(boxes) < 10:
                     print(len(boxes))
                     tracker.density(area)
-                    tracker.reset()
+                    if tracker.count() is not 0:
+                        tracker.reset()
 
             # if SKIP:
             #     averagedLines, STATUS = detectLanes(frame, lanes, ex)

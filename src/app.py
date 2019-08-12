@@ -4,7 +4,7 @@ import cv2 as cv
 import pickle
 
 from multiprocessing import Process, Pool, Queue
-from globals import VID_DATA_DIR
+from globals import VID_DATA_DIR, STOP
 from main import main
 from sock import Sock
 from priority import Watcher
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # p.join() for p in processes
     # m.join()
 
-    main(queue, '{}/one.mp4'.format(VID_DATA_DIR))
+    main(queue, STOP)
     queue.close()
     queue.join_thread()
 

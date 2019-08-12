@@ -56,6 +56,6 @@ class Extractors:
         return self.res
 
     def subtractor(self):
-        subtracted = cv2.subtract(roi(self.res), self.frame)
+        subtracted = cv2.subtract(roi(cv2.imread(BG_IMG_DATA)), self.frame)
         # cv2.imshow('sub', subtracted)
         return subtracted
