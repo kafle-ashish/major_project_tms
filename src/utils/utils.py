@@ -3,6 +3,7 @@ import os
 import cv2
 import math
 import numpy as np
+import multiprocessing as mp
 from globals import *
 
 
@@ -154,12 +155,21 @@ def roi(frame):
                           (0, imshape[0])]
                          ], dtype=np.int32)
     '''
-    vertices = np.array([[(500, imshape[0]),
-                          (600, 390),
-                          (850, 390),
-                          (imshape[1], imshape[0]),
-                          (500, imshape[0])]
-                         ], dtype=np.int32)
+    if mp.current_process().name == "1a":
+        vertices = np.array([[(500, imshape[0]),
+                              (600, 390),
+                              (850, 390),
+                              (imshape[1], imshape[0]),
+                              (500, imshape[0])]
+                             ], dtype=np.int32)
+    else:
+        vertices = np.array([[(0, imshape[0]/1.3),
+                              (350, 390),
+                              (550, 390),
+                              (420, imshape[0]),
+                              (0, imshape[0])]
+                             ], dtype=np.int32)
+
     mask = np.zeros(imshape, dtype=np.uint8)
     cv2.fillPoly(mask, vertices, (255, 255, 255))
     return cv2.bitwise_and(mask, frame)

@@ -15,7 +15,7 @@ servers = ['{}/one.mp4'.format(VID_DATA_DIR) for _ in range(2)]
 
 
 def monitor(queue):
-    TIME = 5
+    TIME = 10
     FUTURE = 0
     URL = 'https://tmsbackend.herokuapp.com/traffic/'
     headers = {
@@ -28,30 +28,40 @@ def monitor(queue):
     conn.disconnect()
     watch = Watcher()
     while True:
-        end = time() + TIME + FUTURE
-        while time() <= end:
-            traffic = queue.get()
-            watch.update(traffic)
-        average, award, future, active = watch.getStatus()
+        try:
+            end = time() + TIME + FUTURE
+            while time() <= end:
+                traffic = queue.get()
+                watch.update(traffic)
+            avg, award, FUTURE, active = watch.getStatus()
 
-        payload = dict(density=average['1a'][1], count=average['1a'][0])
-        r = requests.put(URL, json=payload, headers=headers)
+            payload = {
+                'density': (avg['1a'][1]+avg['2a'][1])/2,
+                'count': int((avg['1a'][0]+avg['2a'][0])/2)
+            }
+            r = requests.put(URL, json=payload, headers=headers)
 
-        print(average, "Changing status", r.content)
-        conn = Sock()
-        conn.connect()
-        if active[0] == '2a':
-            conn.send("ON;TWO")
-        else:
-            conn.send("ON;ONE")
-        conn.disconnect()
+            print("Changing status")
+            print(avg)
+            print("Award {} of {} against {}".format(award, FUTURE, active))
+            print("API response: ", r.content)
+            conn = Sock()
+            conn.connect()
+            if active[0] == '2a':
+                conn.send("ON;TWO")
+            else:
+                conn.send("ON;ONE")
+            conn.disconnect()
+        except Exception as e:
+            print(e)
+            pass
 
 
 if __name__ == '__main__':
     queue = Queue()
     m = Process(target=monitor, args=(queue,))
     processes = [Process(name=name, target=main, args=(queue, video))
-                 for i, name, video in zip(range(1), names, servers)]
+                 for i, name, video in zip(range(2), names, servers)]
     m.start()
     for p in processes:
         p.start()
