@@ -17,7 +17,6 @@ def detectVehicles(frame, ex, tracker):
         contours, _ = cv.findContours(
             sub, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
         )
-        print(len(contours))
         hulls = approxCnt(contours)
         boxes, area = getBoxes(hulls)
         objects = tracker.update(boxes)
@@ -63,22 +62,22 @@ def main(queue, device):
             if cap is not None:
                 _, frame = cap.read()
             detection, ret = detectVehicles(roi(frame), ex, tracker)
-            if len(ret) == 0:
-                subtracted = ex.subtractor()
-                _, threshold = cv.threshold(
-                    subtracted, 50, 255, cv.THRESH_BINARY)
-                subtracted = cv.cvtColor(threshold, cv.COLOR_RGB2GRAY)
-                cv.imshow("sbu", subtracted)
-                cnts, _ = cv.findContours(
-                    subtracted, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
-                )
-                hulls = approxCnt(cnts)
-                boxes, area = getBoxes(hulls)
-                if len(boxes) > 0 and len(boxes) < 10:
-                    print(len(boxes))
-                    tracker.density(area)
-                    if tracker.count() is not 0:
-                        tracker.reset()
+            # if len(ret) == 0:
+            #     subtracted = ex.subtractor()
+            #     _, threshold = cv.threshold(
+            #         subtracted, 50, 255, cv.THRESH_BINARY)
+            #     subtracted = cv.cvtColor(threshold, cv.COLOR_RGB2GRAY)
+            #     # cv.imshow("sbu", subtracted)
+            #     cnts, _ = cv.findContours(
+            #         subtracted, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+            #     )
+            #     hulls = approxCnt(cnts)
+            #     boxes, area = getBoxes(hulls)
+            #     if len(boxes) > 0 and len(boxes) < 10:
+            #         # print(len(boxes))
+            #         tracker.density(area)
+            #         if tracker.count() is not 0:
+            #             tracker.reset()
 
             # if SKIP:
             #     averagedLines, STATUS = detectLanes(frame, lanes, ex)
@@ -89,7 +88,7 @@ def main(queue, device):
             end = cv.getTickCount()
             fps = 'FPS: '+str(int(1/((end - start)/cv.getTickFrequency())))
 
-            cv.imshow('frame', detection)
+            # cv.imshow('frame', detection)
             queue.put({"name": mp.current_process().name, "count":
                        tracker.count(), "density": tracker.density() *
                        100/ROI_AREA, "fps": fps})

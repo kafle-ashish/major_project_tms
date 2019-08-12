@@ -3,7 +3,7 @@ import pickle
 
 
 class Sock:
-    def __init__(self, ip="192.168.43.144", port=5005, buffer=20, header=10):
+    def __init__(self, ip=socket.gethostname(), port=5005, buffer=20, header=10):
         self.TCP_IP = ip
         self.TCP_PORT = port
         self.BUFFER_SIZE = buffer

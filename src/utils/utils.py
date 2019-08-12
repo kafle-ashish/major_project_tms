@@ -20,11 +20,11 @@ def save(frame, dir, name="untitled"):
     return cv2.imwrite(name, frame)
 
 
-def video(dir, name="processed.mp4"):
+def video(dirc, name="processed.mp4"):
     try:
-        images = [img for img in os.listdir(dir) if img.endswith(".png")]
-        frame = cv2.imread(os.path.join(
-            FILE_DIR, "data", "processed", images[0]))
+        images = [img for img in os.listdir(dirc) if img.startswith(
+            "im1b") and img.endswith(".jpg")]
+        frame = cv2.imread(os.path.join(dirc, images[0]))
         height, width, layers = frame.shape
 
         video = cv2.VideoWriter(name, 0, 1, (width, height))
@@ -32,9 +32,9 @@ def video(dir, name="processed.mp4"):
         for image in images:
             video.write(cv2.imread(os.path.join(
                 FILE_DIR, "data", "processed", image)))
-        return True
+        return True, False
     except Exception as e:
-        return False
+        return False, e
 
 
 def getCap(device=0):
